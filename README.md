@@ -2,20 +2,20 @@
 
 # 
 ## 介绍
-详见:[掘金](https://juejin.im/post/5dfc7b02e51d4557eb30d648)
+node+express编写的api
 
 #### 初始化
 
 ```
-cnpm install
+yarn install
 ```
 
 ###  启动
 ```
-nodemon index.js
+nodemon app.js
 ```
 ###  Token说明
-#### 1.token过期时的err值：
+#### 1.token过期返回error：
 ```javascript
 {
     "name": "UnauthorizedError",
@@ -25,11 +25,11 @@ nodemon index.js
     "inner": {
         "name": "TokenExpiredError",
         "message": "jwt expired",
-        "expiredAt": "2017-08-03T10:08:44.000Z"
+        "expiredAt": "2023-01-17"
     }
 }
 ```
-#### 2.token无效时的err值：
+#### 2.token无效返回error：
 ```javascript
 {
     "name": "UnauthorizedError",
@@ -44,5 +44,5 @@ nodemon index.js
 ```
 ####  3.token前端携带
 ```javascript
-Authorization: Bearer 'xczsxssdshsd.zxjjdjsjdsjdsjsd.djjsjsjsdj'
+Authorization: Bearer 'jyr771995'
 ```
