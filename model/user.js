@@ -62,14 +62,19 @@ const fn = {
   },
   // sys创建文章
   addArticlelist: async function (payload) {
-    console.log(payload, "payload");
+    // console.log(payload, "payload");
     let sql = `INSERT INTO ${DatabaseName}.article VALUES ('${randomNum(8)}','${
       payload.articleTitle
     }','${payload.articleDscibe}','${payload.articlePic}','${
       payload.articleDiff
     }','${payload.articleDate}','${payload.articleCreatTime}','${
       payload.articleHtmlText
-    }')`;
+    }'
+    )`;
+    // let sql = "INSERT INTO ${DatabaseName}.article set ? ";
+    // let sql =
+    //   "INSERT INTO myblog.article  (id,articleTitle, articleDscibe, articlePic,articleDiff,articleDate,articleCreatTime, articleHtmlText) VALUES (81523018, 'vue基础使用13', 'vue基础使用2', 'vue基础使用3', 'vue', '2023-01-16 00:00:00', '2023-01-16 16:36:55','内容' ";
+    console.log(payload, "payload");
     return new Promise((resolve, reject) => {
       db.query(sql, payload, function (data, err) {
         if (data) {
@@ -82,24 +87,27 @@ const fn = {
   },
   //   获取文章列表
   getArticlelist: async function (payload) {
-    let sql2 = "SELECT count(id)  FROM myblog.article";
+    let sqllist = "SELECT count(id)  FROM myblog.article";
     const count = new Promise((resolve, reject) => {
-      db.query(sql2, payload, function (data, err) {
-        // console.log(data[0]["count(id)"], "count");
-		resolve(data[0]["count(id)"])
+      db.query(sqllist, payload, function (data, err) {
+        resolve({ count: data[0]["count(id)"] });
       });
     });
-    let sql = `select  * from ${DatabaseName}.article  limit ${payload.pagenum},${payload.pagesize}`;
-    console.log(sql, "sql");
+    // 根据articleCreatTime降序排列 DESC降序 ASC升序
+    let sql = `select  * from ${DatabaseName}.article  order by articleCreatTime DESC limit ${
+      (payload.pagenum - 1) * 10
+    },${payload.pagesize}`;
     const pageList = new Promise((resolve, reject) => {
       db.query(sql, payload, function (data, err) {
         // console.log(data, "数据");
-		resolve(data)
+        resolve(data);
       });
     });
-    Promise.all([count, pageList]).then((values) => {
-      console.log([...values], "values");
-	  return values
+    return Promise.all([count, pageList]).then((values) => {
+      // console.log([...values], "values");
+      return new Promise((resolve) => {
+        resolve(values);
+      });
     });
   },
   // sys创建文章

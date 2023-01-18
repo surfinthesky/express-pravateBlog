@@ -105,17 +105,17 @@ Routers.post("/addarticle", (request, response) => {
     }
   });
 });
-// 创建文章
+// 创建文章 
 Routers.post("/articlepage", (request, response) => {
   let params = request.body || request.params;
   //    数据库操作
   fn.getArticlelist(params).then((result) => {
-    console.log(result);
     if (result) {
       response.send({
         status: 1,
         message: "success",
-        result
+        count: Number(result[0].count),
+        result: result[1],
       });
     } else {
       response.send({
