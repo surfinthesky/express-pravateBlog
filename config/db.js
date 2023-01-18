@@ -28,7 +28,6 @@ exports.query = function(sql, arr, callback){
         console.log(err,'error')
         if(err){throw err;return;}
         connection.query(sql,arr,function(error,results,fields){
-            console.log(err,'error')
             //将链接返回到连接池中，准备由其他人重复使用
             connection.release();
             if(error) throw error;
