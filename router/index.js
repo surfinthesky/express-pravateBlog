@@ -42,27 +42,6 @@ Routers.get("/", (req, res) => {
 });
 
 // 登陆并生成token
-Routers.get("/load", (req, res) => {
-  let tokenObj = {
-    //携带参数
-    id: 1,
-    username: "小明",
-  };
-  let tokenKey = secretKey; //加密内容
-
-  let token = jwt.sign(tokenObj, tokenKey, {
-    expiresIn: 60 * 60 * 24, // token时长
-  });
-  res.send({
-    code: 0,
-    msg: "查询成功",
-    token: "Bearer " + token,
-    data: {
-      username: "12456",
-    },
-  });
-});
-// 登陆并生成token
 Routers.post("/loginperson", (request, response) => {
   let params = request.body || request.params;
   //    数据库操作
@@ -71,11 +50,15 @@ Routers.post("/loginperson", (request, response) => {
     let token = jwt.sign(params, tokenKey, {
       expiresIn: 60 * 60 * 24, // token时长
     });
+    let refreshToken = jwt.sign(params, tokenKey, {
+      expiresIn: 60 * 60 * 24 * 7, // token时长
+    });
     if (result.length > 0 && result[0].username) {
       response.send({
         status: 1,
         message: "success",
         token: token,
+        refreshToken:refreshToken,
         result,
       });
     } else {
@@ -105,7 +88,7 @@ Routers.post("/addarticle", (request, response) => {
     }
   });
 });
-// 创建文章 
+// 查询文章
 Routers.post("/articlepage", (request, response) => {
   let params = request.body || request.params;
   //    数据库操作
