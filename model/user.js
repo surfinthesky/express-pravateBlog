@@ -5,31 +5,38 @@ const bcrypt = require("bcryptjs");
 const salt = bcrypt.genSaltSync(10);
 //表名变量
 let DatabaseName = "myblog";
-let { randomNum } = require("../utils/randomNum");
+let {
+  randomNum
+} = require("../utils/randomNum");
 const fn = {
   //注册用户  无返回值
-  addUser: async function (data) {
-    let sql = "insert into user(username,password,email) values(?,?,?)";
-    let arr = [];
-    arr.push(data.username);
-    arr.push(data.password);
-    arr.push(data.email);
-    return await db.query(sql, arr);
+  addUser: async function (payload) {
+    let sql = `select  passWord from ${DatabaseName}.login  WHERE username =  '${payload.username}'`;
+    return new Promise((resolve, reject) => {
+      db.query(sql, payload, function (data, err) {
+        if (data.length > 0) {
+          resolve({
+            message: "当前账号名已存在，请更换",
+          });
+        } else {
+          let hashPass = bcrypt.hashSync(payload.password, salt);
+          let sql2 = `INSERT INTO  ${DatabaseName}.login VALUES(NULL,'${payload.username}','${hashPass}')`;
+          db.query(sql2, payload, function (data, err) {
+            if (data.insertId) {
+              resolve({
+                message: "注册成功",
+              });
+            } else {
+              resolve({
+                message: "注册失败,请重新填写注册",
+              });
+            }
+          });
+
+        }
+      });
+    }).catch(() => {});
   },
-
-  // // 登录
-  // loadUser: async function (data) {
-  // 	let sql = "select * from user where email=?"
-  // 	let arr = []
-  // 	arr.push(data)
-
-  // 	return new Promise((resolve, reject) => {
-  // 		db.query(sql, arr, function (data, err) {
-  // 			resolve(data)
-  // 		})
-  // 	})
-  // 	return await db.query(sql,arr)
-  // },
   // 登录
   loadUser: async function (payload) {
     let sql = `select  passWord from ${DatabaseName}.login  WHERE username =  '${payload.username}'`;
@@ -42,11 +49,9 @@ const fn = {
             data[0].passWord
           );
           if (comparehashPass === true) {
-            resolve([
-              {
-                username: payload.username,
-              },
-            ]);
+            resolve([{
+              username: payload.username,
+            }, ]);
           } else {
             resolve({
               message: "密码错误",
@@ -54,7 +59,7 @@ const fn = {
           }
         } else {
           resolve({
-            message: "账号错误",
+            message: "账号错误,请重新输入",
           });
         }
       });
@@ -90,7 +95,9 @@ const fn = {
     let sqllist = "SELECT count(id)  FROM myblog.article";
     const count = new Promise((resolve, reject) => {
       db.query(sqllist, payload, function (data, err) {
-        resolve({ count: data[0]["count(id)"] });
+        resolve({
+          count: data[0]["count(id)"]
+        });
       });
     });
     // 根据articleCreatTime降序排列 DESC降序 ASC升序

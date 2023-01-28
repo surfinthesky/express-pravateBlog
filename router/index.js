@@ -10,7 +10,9 @@ Object.keys(fn).forEach((key) => {
   routes.push(`${"/" + key}`);
 });
 
-const { secretKey } = require("../token/constant");
+const {
+  secretKey
+} = require("../token/constant");
 // 全局验证Token是否合法
 const tokens = require("../token/index");
 
@@ -40,6 +42,25 @@ Routers.get("/", (req, res) => {
     },
   });
 });
+//注册
+Routers.post("/register", (request, response) => {
+  let params = request.body || request.params;
+  //    数据库操作
+  fn.addUser(params).then((result) => {
+    console.log(result);
+    if (result.message == "注册成功") {
+      response.send({
+        status: 0,
+        message: result.message,
+      });
+    } else {
+      response.send({
+        status: 1,
+        message: result.message,
+      });
+    }
+  });
+});
 
 // 登陆并生成token
 Routers.post("/loginperson", (request, response) => {
@@ -58,14 +79,13 @@ Routers.post("/loginperson", (request, response) => {
         status: 1,
         message: "success",
         token: token,
-        refreshToken:refreshToken,
+        refreshToken: refreshToken,
         result,
       });
     } else {
       response.send({
         status: 0,
-        message: "error",
-        result,
+        message: result.message,
       });
     }
   });
