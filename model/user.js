@@ -76,10 +76,6 @@ const fn = {
       payload.articleHtmlText
     }','${payload.articleNum}'
     )`;
-    // let sql = "INSERT INTO ${DatabaseName}.article set ? ";
-    // let sql =
-    //   "INSERT INTO myblog.article  (id,articleTitle, articleDscibe, articlePic,articleDiff,articleDate,articleCreatTime, articleHtmlText) VALUES (81523018, 'vue基础使用13', 'vue基础使用2', 'vue基础使用3', 'vue', '2023-01-16 00:00:00', '2023-01-16 16:36:55','内容' ";
-    console.log(payload, "payload");
     return new Promise((resolve, reject) => {
       db.query(sql, payload, function (data, err) {
         if (data) {
