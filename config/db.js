@@ -25,7 +25,7 @@ pool.queueLimit = 0;            // 每个连接可操作的 列数 上限, 0 为
 exports.query = function(sql, arr, callback){
     //建立链接
     pool.getConnection(function(err,connection){
-        console.log(err,'error')
+        // console.log(err,'error')
         if(err){throw err;return;}
         connection.query(sql,arr,function(error,results,fields){
             //将链接返回到连接池中，准备由其他人重复使用

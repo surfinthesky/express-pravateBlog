@@ -74,7 +74,7 @@ const fn = {
       payload.articleDiff
     }','${payload.articleDate}','${payload.articleCreatTime}','${
       payload.articleHtmlText
-    }','${payload.articleNum}'
+    }','2'
     )`;
     // let sql = "INSERT INTO ${DatabaseName}.article set ? ";
     // let sql =

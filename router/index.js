@@ -42,6 +42,24 @@ Routers.get("/", (req, res) => {
     },
   });
 });
+
+// 获取客户端ip地址
+Routers.get('/ip', function (req, res) {
+  var clientIp = getIp(req)
+  console.log('客户端ip',clientIp)
+  res.json({'youIp':clientIp});
+})
+//通过req的hearers来获取客户端ip
+var getIp = function(req) {
+  console.log(req);
+  var ip = req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.connection.remoteAddres || req.socket.remoteAddress || '';
+  if(ip.split(',').length>0){
+    ip = ip.split(',')[0];
+  }
+  return ip;
+};
+
+
 //注册
 Routers.post("/register", (request, response) => {
   let params = request.body || request.params;
