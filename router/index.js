@@ -146,5 +146,46 @@ Routers.post("/articlepage", (request, response) => {
     }
   });
 });
+
+// 创建timeline
+Routers.post("/addtimeline", (request, response) => {
+  let params = request.body || request.params;
+  //    数据库操作
+  fn.addtimelinelist(params).then((result) => {
+    if (result) {
+      response.send({
+        status: 1,
+        message: "success",
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "error",
+      });
+    }
+  });
+});
+
+
+// 查询创建timeline
+Routers.post("/timelinepage", (request, response) => {
+  let params = request.body || request.params;
+  //    数据库操作
+  fn.getTimelinelist(params).then((result) => {
+    if (result) {
+      response.send({
+        status: 1,
+        message: "success",
+        count: Number(result[0].count),
+        result: result[1],
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "error",
+      });
+    }
+  });
+});
 // console.log(Routers.stack,'Routers');
 module.exports = Routers;

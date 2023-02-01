@@ -113,16 +113,52 @@ const fn = {
       });
     });
   },
-  // sys创建文章
-  //   getUserlist: async function (payload) {
-  //     let sql =
-  //       "select a.*, b.*,a.id as user_id from contacts a inner join user b on a.userlistid = b.id where userid=?";
-  //     return new Promise((resolve, reject) => {
-  //       db.query(sql, payload, function (data, err) {
-  //         resolve(data);
-  //       });
-  //     });
-  //   },
+  // sys创建timeline
+  addtimelinelist: async function (payload) {
+    // console.log(payload, "payload");
+    let sql = `INSERT INTO ${DatabaseName}.timeline VALUES ('${randomNum(8)}','${
+      payload.stageContent
+    }','${payload.stageTimestamp}','${payload.stageCompletTime}','${
+      payload.stageColor
+    }','${payload.stageIcon}'
+    )`;
+    return new Promise((resolve, reject) => {
+      db.query(sql, payload, function (data, err) {
+        if (data) {
+          resolve(data);
+        } else {
+          resolve([]);
+        }
+      });
+    }).catch(() => {});
+  },
+  //   获取timeline列表
+  getTimelinelist: async function (payload) {
+    let sqllist = "SELECT count(id)  FROM myblog.timeline";
+    const count = new Promise((resolve, reject) => {
+      db.query(sqllist, payload, function (data, err) {
+        resolve({
+          count: data[0]["count(id)"]
+        });
+      });
+    });
+    // 根据articleCreatTime降序排列 DESC降序 ASC升序
+    let sql = `select  * from ${DatabaseName}.timeline  order by stageTimestamp DESC limit ${
+        (payload.pagenum - 1) * 10
+      },${payload.pagesize}`;
+    const pageList = new Promise((resolve, reject) => {
+      db.query(sql, payload, function (data, err) {
+        // console.log(data, "数据");
+        resolve(data);
+      });
+    });
+    return Promise.all([count, pageList]).then((values) => {
+      // console.log([...values], "values");
+      return new Promise((resolve) => {
+        resolve(values);
+      });
+    });
+  },
 };
 
 module.exports = fn;
