@@ -3,7 +3,7 @@ const app = express();
 const path = require("path");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-
+const fs = require('fs');
 // 配置静态目录
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -30,6 +30,21 @@ app.use("/", index);
 // 引入index路由文件
 const fileupload = require("./router/fileupload");
 app.use("/fileupload", fileupload);
+app._router.stack.map((item, index) => {
+  if (item.handle.stack !== undefined) {
+    var outputFilename = './my.json';
+    // fs.writeFile(outputFilename, JSON.stringify(item.handle.stack, null, 4), function(err) {
+    //     if(err) {
+    //       console.log(err);
+    //     } else {
+    //       console.log("JSON saved to " + outputFilename);
+    //     }
+    // });
+    // console.log(JSON.stringify(item.handle.stack),'item');
+  }
+});
+
+
 
 const port = process.env.PORT || 3333;
 

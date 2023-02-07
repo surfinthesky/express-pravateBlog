@@ -16,12 +16,15 @@
     "express": "^4.17.1",
     "express-jwt": "^5.3.1",
     "formidable": "^1.2.1",
+    "fs": "^0.0.1-security",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
     "md5": "^2.3.0",
     "moment": "^2.24.0",
     "mysql": "^2.17.1",
     "qiniu": "^7.2.2",
-    "socket.io": "^2.3.0"
+    "silly-datetime": "^0.1.2",
+    "socket.io": "^2.3.0",
+    "util": "^0.12.5"
   }
 }

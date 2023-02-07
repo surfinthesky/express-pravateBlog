@@ -1,6 +1,7 @@
 // 含Token 路由
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const path = require("path");
 const Routers = express.Router();
 //路由
 const fn = require("../model/user");
@@ -20,9 +21,10 @@ Routers.use(tokens);
 
 // 如果token过期或者 错误的处理
 Routers.use(function (err, req, res, next) {
-  // console.log(err);
-  // console.log(req.url,'req');
+  console.log(err);
+  console.log(req.url,'req');
   // console.log(res);
+  console.log("------------")
   if (err.name === "UnauthorizedError") {
     //  这个需要根据自己的业务逻辑来处理（ 具体的err值 请看下面）
     res.status(401).send("非法token");
@@ -59,6 +61,9 @@ var getIp = function(req) {
   return ip;
 };
 
+Routers.get('/img', function (req, res, next) {
+  res.sendFile(path.join(__dirname, '../public/images/user/20230207153847googlPassword.jpg48761googlPassword.jpg'));
+})
 
 //注册
 Routers.post("/register", (request, response) => {
