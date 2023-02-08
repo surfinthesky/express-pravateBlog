@@ -1,4 +1,5 @@
 // 含Token 路由
+const { log } = require("console");
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const path = require("path");
@@ -11,9 +12,7 @@ Object.keys(fn).forEach((key) => {
   routes.push(`${"/" + key}`);
 });
 
-const {
-  secretKey
-} = require("../token/constant");
+const { secretKey } = require("../token/constant");
 // 全局验证Token是否合法
 const tokens = require("../token/index");
 
@@ -22,9 +21,9 @@ Routers.use(tokens);
 // 如果token过期或者 错误的处理
 Routers.use(function (err, req, res, next) {
   console.log(err);
-  console.log(req.url,'req');
+  console.log(req.url, "req");
   // console.log(res);
-  console.log("------------")
+  console.log("------------");
   if (err.name === "UnauthorizedError") {
     //  这个需要根据自己的业务逻辑来处理（ 具体的err值 请看下面）
     res.status(401).send("非法token");
@@ -46,24 +45,32 @@ Routers.get("/", (req, res) => {
 });
 
 // 获取客户端ip地址
-Routers.get('/ip', function (req, res) {
-  var clientIp = getIp(req)
-  console.log('客户端ip',clientIp)
-  res.json({'youIp':clientIp});
-})
+Routers.get("/ip", function (req, res) {
+  var clientIp = getIp(req);
+  console.log("客户端ip", clientIp);
+  res.json({ youIp: clientIp });
+});
 //通过req的hearers来获取客户端ip
-var getIp = function(req) {
+var getIp = function (req) {
   console.log(req);
-  var ip = req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.connection.remoteAddres || req.socket.remoteAddress || '';
-  if(ip.split(',').length>0){
-    ip = ip.split(',')[0];
+  var ip =
+    req.headers["x-real-ip"] ||
+    req.headers["x-forwarded-for"] ||
+    req.connection.remoteAddres ||
+    req.socket.remoteAddress ||
+    "";
+  if (ip.split(",").length > 0) {
+    ip = ip.split(",")[0];
   }
   return ip;
 };
-
-Routers.get('/img', function (req, res, next) {
-  res.sendFile(path.join(__dirname, '../public/images/user/20230207153847googlPassword.jpg48761googlPassword.jpg'));
-})
+//获取上传的图片
+// Routers.get('/getimg', function (request, response) {
+//   console.log(request,'request')
+//   let params = request.body || request.params;
+//   console.log(params,'params')
+//   response.sendFile(path.join(__dirname, '../public/images/user/20230207153847googlPassword.jpg48761googlPassword.jpg'));
+// })
 
 //注册
 Routers.post("/register", (request, response) => {
@@ -152,6 +159,31 @@ Routers.post("/articlepage", (request, response) => {
   });
 });
 
+// 根据id删除文章
+Routers.post("/articledelete", (request, response) => {
+  let params = request.body || request.params;
+  //    数据库操作
+  fn.postArticleDelete(params).then((result) => {
+    console.log(result, "result");
+    if (result.msg) {
+      response.send({
+        status: 0,
+        message: result.msg,
+      });
+    } else if (result.affectedRows) {
+      response.send({
+        status: 1,
+        message: "success",
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "error",
+      });
+    }
+  });
+});
+
 // 创建timeline
 Routers.post("/addtimeline", (request, response) => {
   let params = request.body || request.params;
@@ -170,7 +202,6 @@ Routers.post("/addtimeline", (request, response) => {
     }
   });
 });
-
 
 // 查询创建timeline
 Routers.post("/timelinepage", (request, response) => {
@@ -192,5 +223,6 @@ Routers.post("/timelinepage", (request, response) => {
     }
   });
 });
+
 // console.log(Routers.stack,'Routers');
 module.exports = Routers;

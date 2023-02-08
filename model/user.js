@@ -5,9 +5,7 @@ const bcrypt = require("bcryptjs");
 const salt = bcrypt.genSaltSync(10);
 //表名变量
 let DatabaseName = "myblog";
-let {
-  randomNum
-} = require("../utils/randomNum");
+let { randomNum } = require("../utils/randomNum");
 const fn = {
   //注册用户  无返回值
   addUser: async function (payload) {
@@ -32,7 +30,6 @@ const fn = {
               });
             }
           });
-
         }
       });
     }).catch(() => {});
@@ -49,9 +46,11 @@ const fn = {
             data[0].passWord
           );
           if (comparehashPass === true) {
-            resolve([{
-              username: payload.username,
-            }, ]);
+            resolve([
+              {
+                username: payload.username,
+              },
+            ]);
           } else {
             resolve({
               message: "密码错误",
@@ -92,7 +91,7 @@ const fn = {
     const count = new Promise((resolve, reject) => {
       db.query(sqllist, payload, function (data, err) {
         resolve({
-          count: data[0]["count(id)"]
+          count: data[0]["count(id)"],
         });
       });
     });
@@ -113,14 +112,36 @@ const fn = {
       });
     });
   },
+  //   删除文章
+  postArticleDelete: async function (payload) {
+    let deletesql = `DELETE FROM ${DatabaseName}.article WHERE ID =${payload.delectId}`;
+    let isExistence = `SELECT * FROM ${DatabaseName}.article WHERE ID = ${payload.delectId}`;
+    return new Promise((resolve, reject) => {
+      db.query(isExistence, payload, function (data, err) {
+        if (data.length == 0) {
+          resolve({ msg: "未查询到该id" });
+        } else {
+          db.query(deletesql, payload, function (data, err) {
+            console.log(data, "data");
+            console.log(err, "err");
+            if (data) {
+              resolve(data);
+            } else {
+              resolve([]);
+            }
+          });
+        }
+      });
+    });
+  },
   // sys创建timeline
   addtimelinelist: async function (payload) {
     // console.log(payload, "payload");
-    let sql = `INSERT INTO ${DatabaseName}.timeline VALUES ('${randomNum(8)}','${
-      payload.stageContent
-    }','${payload.stageTimestamp}','${payload.stageCompletTime}','${
-      payload.stageColor
-    }','${payload.stageIcon}'
+    let sql = `INSERT INTO ${DatabaseName}.timeline VALUES ('${randomNum(
+      8
+    )}','${payload.stageContent}','${payload.stageTimestamp}','${
+      payload.stageCompletTime
+    }','${payload.stageColor}','${payload.stageIcon}'
     )`;
     return new Promise((resolve, reject) => {
       db.query(sql, payload, function (data, err) {
@@ -138,14 +159,14 @@ const fn = {
     const count = new Promise((resolve, reject) => {
       db.query(sqllist, payload, function (data, err) {
         resolve({
-          count: data[0]["count(id)"]
+          count: data[0]["count(id)"],
         });
       });
     });
     // 根据articleCreatTime降序排列 DESC降序 ASC升序
     let sql = `select  * from ${DatabaseName}.timeline  order by stageTimestamp DESC limit ${
-        (payload.pagenum - 1) * 10
-      },${payload.pagesize}`;
+      (payload.pagenum - 1) * 10
+    },${payload.pagesize}`;
     const pageList = new Promise((resolve, reject) => {
       db.query(sql, payload, function (data, err) {
         // console.log(data, "数据");
