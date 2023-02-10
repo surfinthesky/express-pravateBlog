@@ -26,7 +26,7 @@ Routers.use(function (err, req, res, next) {
   console.log("------------");
   if (err.name === "UnauthorizedError") {
     //  这个需要根据自己的业务逻辑来处理（ 具体的err值 请看下面）
-    res.status(401).send("非法token");
+    res.status(401).send("token失效");
   }
 });
 
@@ -95,7 +95,7 @@ Routers.post("/register", (request, response) => {
 // 登陆并生成token
 Routers.post("/loginperson", (request, response) => {
   let params = request.body || request.params;
-  //    数据库操作
+    //  数据库操作
   fn.loadUser(params).then((result) => {
     let tokenKey = secretKey; //加密内容
     let token = jwt.sign(params, tokenKey, {
@@ -162,9 +162,8 @@ Routers.post("/articlepage", (request, response) => {
 // 根据id删除文章
 Routers.post("/articledelete", (request, response) => {
   let params = request.body || request.params;
-  //    数据库操作
+    //  数据库操作
   fn.postArticleDelete(params).then((result) => {
-    console.log(result, "result");
     if (result.msg) {
       response.send({
         status: 0,
@@ -173,12 +172,36 @@ Routers.post("/articledelete", (request, response) => {
     } else if (result.affectedRows) {
       response.send({
         status: 1,
-        message: "success",
+        message: "删除成功",
       });
     } else {
       response.send({
         status: 0,
-        message: "error",
+        message: "删除失败",
+      });
+    }
+  });
+});
+// 文章更新
+Routers.post("/articleupdate", (request, response) => {
+  let params = request.body || request.params;
+    //  数据库操作
+  fn.updateArticle(params).then((result) => {
+    return
+    if (result.msg) {
+      response.send({
+        status: 0,
+        message: result.msg,
+      });
+    } else if (result.affectedRows) {
+      response.send({
+        status: 1,
+        message: "删除成功",
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "删除失败",
       });
     }
   });

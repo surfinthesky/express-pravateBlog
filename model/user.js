@@ -85,6 +85,27 @@ const fn = {
       });
     }).catch(() => {});
   },
+  // sys文章更新
+  updateArticle: async function (payload) {
+    // console.log(payload, "payload");
+    let sql = `UPDATE  ${DatabaseName}.article VALUES ('${payload.id}','${
+      payload.articleTitle
+    }','${payload.articleDscibe}','${payload.articlePic}','${
+      payload.articleDiff
+    }','${payload.articleDate}','${payload.articleCreatTime}','${
+      payload.articleHtmlText
+    }','${payload.articleNum}'
+    )`;
+    return new Promise((resolve, reject) => {
+      db.query(sql, payload, function (data, err) {
+        if (data) {
+          resolve(data);
+        } else {
+          resolve([]);
+        }
+      });
+    }).catch(() => {});
+  },
   //   获取文章列表
   getArticlelist: async function (payload) {
     let sqllist = "SELECT count(id)  FROM myblog.article";
