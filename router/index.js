@@ -95,7 +95,7 @@ Routers.post("/register", (request, response) => {
 // 登陆并生成token
 Routers.post("/loginperson", (request, response) => {
   let params = request.body || request.params;
-    //  数据库操作
+  //  数据库操作
   fn.loadUser(params).then((result) => {
     let tokenKey = secretKey; //加密内容
     let token = jwt.sign(params, tokenKey, {
@@ -162,7 +162,7 @@ Routers.post("/articlepage", (request, response) => {
 // 根据id删除文章
 Routers.post("/articledelete", (request, response) => {
   let params = request.body || request.params;
-    //  数据库操作
+  //  数据库操作
   fn.postArticleDelete(params).then((result) => {
     if (result.msg) {
       response.send({
@@ -185,23 +185,17 @@ Routers.post("/articledelete", (request, response) => {
 // 文章更新
 Routers.post("/articleupdate", (request, response) => {
   let params = request.body || request.params;
-    //  数据库操作
+  //  数据库操作
   fn.updateArticle(params).then((result) => {
-    return
-    if (result.msg) {
-      response.send({
-        status: 0,
-        message: result.msg,
-      });
-    } else if (result.affectedRows) {
+    if (result) {
       response.send({
         status: 1,
-        message: "删除成功",
+        message: "success",
       });
     } else {
       response.send({
         status: 0,
-        message: "删除失败",
+        message: "error",
       });
     }
   });

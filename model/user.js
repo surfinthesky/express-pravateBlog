@@ -87,11 +87,7 @@ const fn = {
   },
   // sys文章更新
   updateArticle: async function (payload) {
-    // console.log(payload, "payload");
-    let sql = `UPDATE  ${DatabaseName}.article WHERE ID =${payload.id}  
-    VALUES ('${payload.articleTitle}','${payload.articleDscibe}','${payload.articlePic}','${payload.articleDiff}','${payload.articleDate}','${payload.articleCreatTime}','${payload.articleHtmlText}','${payload.articleNum}'
-    )`;
-    let sql2 =`UPDATE  ${DatabaseName}.article SET articleTitle =${payload.articleTitle},articleDscibe =${payload.articleDscibe},articlePic =${payload.articlePic},articleDiff =${payload.articleDiff},articleDate =${payload.articleDate}, WHERE ID =${payload.id}`
+    let sql = `UPDATE  ${DatabaseName}.article SET articleTitle ='${payload.articleTitle}',articleDscibe ='${payload.articleDscibe}',articlePic ='${payload.articlePic}',articleDiff ='${payload.articleDiff}',articleDate ='${payload.articleDate}', articleCreatTime ='${payload.articleCreatTime}',articleHtmlText ='${payload.articleHtmlText}',articleNum ='${payload.articleNum}'WHERE ID =${payload.id}`;
     return new Promise((resolve, reject) => {
       db.query(sql, payload, function (data, err) {
         if (data) {
