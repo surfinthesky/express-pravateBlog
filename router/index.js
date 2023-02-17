@@ -2,8 +2,12 @@
 const { log } = require("console");
 const express = require("express");
 const jwt = require("jsonwebtoken");
-const path = require("path");
 const Routers = express.Router();
+const fileDisplay = require("../utils/filePath");
+// fileDisplay("../public/images/user", (arr) => {
+//   console.log(arr, "-=2");
+// });
+
 //路由
 const fn = require("../model/user");
 // console.log(fn,'fn');
@@ -21,7 +25,7 @@ Routers.use(tokens);
 // 如果token过期或者 错误的处理
 Routers.use(function (err, req, res, next) {
   console.log(err);
-  console.log(req.url, "req");
+  // console.log(req.url, "req");
   // console.log(res);
   console.log("------------");
   if (err.name === "UnauthorizedError") {
@@ -240,6 +244,24 @@ Routers.post("/timelinepage", (request, response) => {
     }
   });
 });
+// 返回存储的图片路径
+Routers.get("/allimgPath", (request, response) => {
+  let params = request.body || request.params;
+  fileDisplay("../public/images/user", (arr) => {
+    console.log(arr, "-=2");
+    if (arr) {
+      response.send({
+        status: 1,
+        result: arr,
+        message: "success",
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "error",
+      });
+    }
+  });
+});
 
-// console.log(Routers.stack,'Routers');
 module.exports = Routers;

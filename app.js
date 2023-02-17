@@ -43,7 +43,7 @@ app._router.stack.map((item, index) => {
     // console.log(JSON.stringify(item.handle.stack),'item');
   }
 });
-
+//获取所有图片路径
 
 
 const port = process.env.PORT || 3333;
