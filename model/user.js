@@ -5,7 +5,9 @@ const bcrypt = require("bcryptjs");
 const salt = bcrypt.genSaltSync(10);
 //表名变量
 let DatabaseName = "myblog";
+// 随机数
 let { randomNum } = require("../utils/randomNum");
+let { crypto_decrypt } = require("../utils/crypto");
 const fn = {
   //注册用户  无返回值
   addUser: async function (payload) {
@@ -41,8 +43,9 @@ const fn = {
       db.query(sql, payload, function (data, err) {
         let comparehashPass = false;
         if (data.length > 0) {
+          //校验密码
           comparehashPass = bcrypt.compareSync(
-            payload.password,
+            crypto_decrypt(payload.password),
             data[0].passWord
           );
           if (comparehashPass === true) {
@@ -100,18 +103,32 @@ const fn = {
   },
   //   获取文章列表
   getArticlelist: async function (payload) {
-    let sqllist = "SELECT count(id)  FROM myblog.article";
+    let sqllist = "";
+    let sql = "";
+    if (payload.sortvalue) {
+      sqllist = `SELECT count(id) FROM ${DatabaseName}.article  WHERE  articleDiff  ='${payload.sortvalue}'`;
+      sql = `SELECT *  FROM ${DatabaseName}.article  WHERE  articleDiff  = '${
+        payload.sortvalue
+      }' order by articleCreatTime DESC limit ${(payload.pagenum - 1) * 10},${
+        payload.pagesize
+      }`;
+    } else {
+      sqllist = "SELECT count(id)  FROM myblog.article";
+      sql = `select  * from ${DatabaseName}.article  order by articleCreatTime DESC limit ${
+        (payload.pagenum - 1) * 10
+      },${payload.pagesize}`;
+    }
+
     const count = new Promise((resolve, reject) => {
       db.query(sqllist, payload, function (data, err) {
+        // console.log(data, "总数量----");
         resolve({
           count: data[0]["count(id)"],
         });
       });
     });
     // 根据articleCreatTime降序排列 DESC降序 ASC升序
-    let sql = `select  * from ${DatabaseName}.article  order by articleCreatTime DESC limit ${
-      (payload.pagenum - 1) * 10
-    },${payload.pagesize}`;
+
     const pageList = new Promise((resolve, reject) => {
       db.query(sql, payload, function (data, err) {
         // console.log(data, "数据");
@@ -168,6 +185,7 @@ const fn = {
   },
   //   获取timeline列表
   getTimelinelist: async function (payload) {
+    console.log(payload.pagenum, "payload");
     let sqllist = "SELECT count(id)  FROM myblog.timeline";
     const count = new Promise((resolve, reject) => {
       db.query(sqllist, payload, function (data, err) {
@@ -177,9 +195,14 @@ const fn = {
       });
     });
     // 根据articleCreatTime降序排列 DESC降序 ASC升序
-    let sql = `select  * from ${DatabaseName}.timeline  order by stageTimestamp DESC limit ${
-      (payload.pagenum - 1) * 10
-    },${payload.pagesize}`;
+    let sql = "";
+    if (!payload.pagenum) {
+      sql = `select  *  from ${DatabaseName}.timeline  order by stageCompletTime DESC `;
+    } else {
+      sql = `select  * from ${DatabaseName}.timeline  order by stageTimestamp DESC limit ${
+        (payload.pagenum - 1) * 10
+      },${payload.pagesize}`;
+    }
     const pageList = new Promise((resolve, reject) => {
       db.query(sql, payload, function (data, err) {
         // console.log(data, "数据");
@@ -190,6 +213,65 @@ const fn = {
       // console.log([...values], "values");
       return new Promise((resolve) => {
         resolve(values);
+      });
+    });
+  },
+  // sys timeline更新
+  updateTimeline: async function (payload) {
+    let sql = `UPDATE  ${DatabaseName}.timeline SET stageContent ='${payload.stageContent}',stageTimestamp ='${payload.stageTimestamp}',stageCompletTime ='${payload.stageCompletTime}',stageColor ='${payload.stageColor}',stageIcon ='${payload.stageIcon}' WHERE ID =${payload.id}`;
+    return new Promise((resolve, reject) => {
+      db.query(sql, payload, function (data, err) {
+        if (data) {
+          resolve(data);
+        } else {
+          resolve([]);
+        }
+      });
+    }).catch(() => {});
+  },
+  //  根据id删除timeline
+  timelineDelete: async function (payload) {
+    let deletesql = `DELETE FROM ${DatabaseName}.timeline WHERE ID =${payload.delectId}`;
+    let isExistence = `SELECT * FROM ${DatabaseName}.timeline WHERE ID = ${payload.delectId}`;
+    return new Promise((resolve, reject) => {
+      db.query(isExistence, payload, function (data, err) {
+        console.log(data, "123");
+        if (data.length == 0) {
+          resolve({ msg: "未查询到该id" });
+        } else {
+          db.query(deletesql, payload, function (data, err) {
+            if (data) {
+              resolve(data);
+            } else {
+              resolve([]);
+            }
+          });
+        }
+      });
+    });
+  },
+  //  文章分类articleDiff
+  // SELECT COUNT(articleDiff),articleDiff(key) FROM article GROUP BY articleDiff
+  // { COUNT(articleDiff):3  articleDiff: React}
+  articleSort: async function (payload) {
+    let sql = `SELECT COUNT(${payload.sortText}),articleDiff FROM ${DatabaseName}.article GROUP BY ${payload.sortText}`;
+    return new Promise((resolve, reject) => {
+      db.query(sql, payload, function (data, err) {
+        if (data) {
+          let arr = [];
+          data.map((item) => {
+            let obj = {
+              count: "",
+              articleDiff: "",
+            };
+            obj.count = item["COUNT(articleDiff)"];
+            obj.articleDiff = item.articleDiff;
+            arr.push(obj);
+          });
+          resolve(arr);
+        } else {
+          resolve([]);
+        }
       });
     });
   },

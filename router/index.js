@@ -204,6 +204,26 @@ Routers.post("/articleupdate", (request, response) => {
     }
   });
 });
+// 文章分类
+Routers.post("/articlesort", (request, response) => {
+  let params = request.body || request.params;
+  //  数据库操作
+  fn.articleSort(params).then((result) => {
+    if (result) {
+      // console.log(result,'result');
+      response.send({
+        status: 1,
+        message: "success",
+        result,
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "error",
+      });
+    }
+  });
+});
 
 // 创建timeline
 Routers.post("/addtimeline", (request, response) => {
@@ -244,11 +264,51 @@ Routers.post("/timelinepage", (request, response) => {
     }
   });
 });
+// timeline更新
+Routers.post("/timelineupdate", (request, response) => {
+  let params = request.body || request.params;
+  //  数据库操作
+  fn.updateTimeline(params).then((result) => {
+    if (result) {
+      response.send({
+        status: 1,
+        message: "success",
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "error",
+      });
+    }
+  });
+});
+// 根据id删除timeline
+Routers.post("/timelinedelete", (request, response) => {
+  let params = request.body || request.params;
+  //  数据库操作
+  fn.timelineDelete(params).then((result) => {
+    if (result.msg) {
+      response.send({
+        status: 0,
+        message: result.msg,
+      });
+    } else if (result.affectedRows) {
+      response.send({
+        status: 1,
+        message: "删除成功",
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "删除失败",
+      });
+    }
+  });
+});
 // 返回存储的图片路径
 Routers.get("/allimgPath", (request, response) => {
   let params = request.body || request.params;
   fileDisplay("../public/images/user", (arr) => {
-    console.log(arr, "-=2");
     if (arr) {
       response.send({
         status: 1,
