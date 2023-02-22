@@ -275,6 +275,34 @@ const fn = {
       });
     });
   },
+
+  //  热门文章阅读量前5
+  // SELECT id,articleTitle,articleNum FROM article GROUP BY id,articleTitle ORDER BY articleNum  DESC LIMIT 0,5
+  articleHot: async function (payload) {
+    let sql = `SELECT id,articleTitle,articleNum FROM ${DatabaseName}.article GROUP BY id,articleTitle ORDER BY articleNum  DESC LIMIT 0,5`;
+    return new Promise((resolve, reject) => {
+      db.query(sql, payload, function (data, err) {
+        if (data) {
+          resolve(data);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+  },
+  //根据id获取文章
+  articleDetail: async function (payload) {
+    let sql = `SELECT * FROM ${DatabaseName}.article WHERE ID =${payload.id}`;
+    return new Promise((resolve, reject) => {
+      db.query(sql, payload, function (data, err) {
+        if (data) {
+          resolve(data);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+  },
 };
 
 module.exports = fn;

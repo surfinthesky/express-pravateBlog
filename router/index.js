@@ -323,5 +323,41 @@ Routers.get("/allimgPath", (request, response) => {
     }
   });
 });
+//articleHot 前五条
+Routers.post("/articleHotlist", (request, response) => {
+  let params = request.body || request.params;
+  fn.articleHot(params).then((result) => {
+    if (result) {
+      response.send({
+        status: 1,
+        message: "success",
+        result,
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "error",
+      });
+    }
+  });
+});
+//根据id获取文章
+Routers.post("/articledetail", (request, response) => {
+  let params = request.body || request.params;
+  fn.articleDetail(params).then((result) => {
+    if (result) {
+      response.send({
+        status: 1,
+        message: "success",
+        result,
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "error",
+      });
+    }
+  });
+});
 
 module.exports = Routers;
