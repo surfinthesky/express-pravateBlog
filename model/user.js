@@ -38,7 +38,9 @@ const fn = {
   },
   // 登录
   loadUser: async function (payload) {
-    let sql = `select  passWord from ${DatabaseName}.login  WHERE username =  '${payload.username}'`;
+    let string = ",";
+    let sql = `select * from ${DatabaseName}.login  WHERE username =  '${payload.username}'`;
+    console.log(sql, "sql");
     return new Promise((resolve, reject) => {
       db.query(sql, payload, function (data, err) {
         let comparehashPass = false;
@@ -46,12 +48,13 @@ const fn = {
           //校验密码
           comparehashPass = bcrypt.compareSync(
             crypto_decrypt(payload.password),
-            data[0].passWord
+            data[0].password
           );
           if (comparehashPass === true) {
             resolve([
               {
                 username: payload.username,
+                avatarurl: data[0].avatarurl,
               },
             ]);
           } else {
@@ -300,6 +303,47 @@ const fn = {
         } else {
           resolve([]);
         }
+      });
+    });
+  },
+  
+  //留言接口  WHERE ISNULL(toCommentId)
+  replyMessgae: async function (payload) {
+    let countsql = `SELECT COUNT(id) FROM ${DatabaseName}.commentInfo WHERE  ISNULL(toCommentId) `;
+    let parentsql = `SELECT * FROM ${DatabaseName}.commentInfo    WHERE ISNULL(toCommentId)  ORDER BY createDate DESC LIMIT ${
+      (payload.pagenum - 1) * 10
+    },${payload.pagesize}`;
+    let childsql = `SELECT * FROM ${DatabaseName}.commentInfo WHERE toCommentId is not null ORDER BY createDate DESC`;
+    const count = await new Promise((resolve, reject) => {
+      db.query(countsql, payload, function (data, err) {
+        resolve({
+          count: data[0]["COUNT(id)"],
+        });
+      });
+    });
+    const pageList = await new Promise((resolve, reject) => {
+      db.query(parentsql, payload, function (data, err) {
+        if (data) {
+          resolve(data);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+    const childpageList = await new Promise((resolve, reject) => {
+      db.query(childsql, payload, function (data, err) {
+        if (data) {
+          resolve(data);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+
+    return Promise.all([count, pageList, childpageList]).then((values) => {
+      console.log(values, "values2");
+      return new Promise((resolve) => {
+        resolve(values);
       });
     });
   },

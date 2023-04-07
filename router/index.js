@@ -3,11 +3,11 @@ const { log } = require("console");
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const Routers = express.Router();
+const getRequest = require("axios");
 const fileDisplay = require("../utils/filePath");
 // fileDisplay("../public/images/user", (arr) => {
 //   console.log(arr, "-=2");
 // });
-
 //路由
 const fn = require("../model/user");
 // console.log(fn,'fn');
@@ -358,6 +358,56 @@ Routers.post("/articledetail", (request, response) => {
       });
     }
   });
+});
+//获取所有的留言
+Routers.post("/replyMessgaelist", (request, response) => {
+  let params = request.body || request.params;
+  fn.replyMessgae(params).then((result) => {
+    if (result) {
+      response.send({
+        status: 1,
+        message: "success",
+        count: result[0].count,
+        result: [...result[1], ...result[2]],
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "error",
+      });
+    }
+  });
+});
+//获取当前用户ip信息
+Routers.post("/getlocationIp", (request, response) => {
+  getRequest({
+    url: "https://restapi.amap.com/v3/ip?ip=&output=json&key=b1c28ac7c16a6168087271355ae39a89",
+    method: "post",
+  })
+    .then((res) => {
+      if (res.data) {
+        response.send(res.data);
+      }
+    })
+    .catch((err) => {
+      // console.log(err, "location1");
+    });
+});
+//根据用户ip信息 获取天气
+Routers.get("/getWeather", (request, response) => {
+  console.log(request.query.locationid,'request');
+  getRequest({
+    url: `https://api.seniverse.com/v3/weather/daily.json?key=S_mrtmdQWcp2TDX3H&location=${request.query.locationid}&language=zh-Hans&unit=c&start=0&days=5`,
+    method: "get",
+  })
+    .then((res) => {
+      if (res.data) {
+        response.send(res.data);
+      }
+    })
+    .catch((err) => {
+      // console.log(err, "location1");
+    });
 });
 
 module.exports = Routers;
