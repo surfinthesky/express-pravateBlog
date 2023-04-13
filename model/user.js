@@ -306,7 +306,7 @@ const fn = {
       });
     });
   },
-  
+
   //留言接口  WHERE ISNULL(toCommentId)
   replyMessgae: async function (payload) {
     let countsql = `SELECT COUNT(id) FROM ${DatabaseName}.commentInfo WHERE  ISNULL(toCommentId) `;
@@ -317,7 +317,7 @@ const fn = {
     const count = await new Promise((resolve, reject) => {
       db.query(countsql, payload, function (data, err) {
         resolve({
-          count: data[0]["COUNT(id)"],
+          count: Number(data[0]["COUNT(id)"]),
         });
       });
     });
@@ -325,12 +325,25 @@ const fn = {
       db.query(parentsql, payload, function (data, err) {
         if (data) {
           resolve(data);
+          // let infoObj = {};
+          // let userinfodata = [];
+          // data.map((item) => {
+          //   let findUser = `SELECT * FROM ${DatabaseName}.login WHERE ID = ${item.userId}`;
+          //   db.query(findUser, payload, function (data, err) {
+          //     infoObj.id = data[0].id;
+          //     infoObj.username = data[0].username;
+          //     infoObj.avatarurl = data[0].avatarurl;
+          //     item.userinfo = infoObj;
+          //     userinfodata.push(item);
+          //     resolve(userinfodata);
+          //   });
+          // });
         } else {
           resolve([]);
         }
       });
     });
-    const childpageList = await new Promise((resolve, reject) => {
+    const childpageList = new Promise((resolve, reject) => {
       db.query(childsql, payload, function (data, err) {
         if (data) {
           resolve(data);
@@ -339,11 +352,45 @@ const fn = {
         }
       });
     });
-
     return Promise.all([count, pageList, childpageList]).then((values) => {
-      console.log(values, "values2");
+      // console.log(values, "values2");
       return new Promise((resolve) => {
         resolve(values);
+      });
+    });
+  },
+
+  // 根据id获取用户信息
+  getuserInfo: async function (payload) {
+    let sql = `SELECT  id,username,avatarurl   FROM ${DatabaseName}.login  WHERE  ID   = ${payload.id}`;
+    return new Promise((resolve, reject) => {
+      db.query(sql, payload, function (data, err) {
+        if (data) {
+          resolve(data);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+  },
+  // 用户添加评论
+  insertMessage: async function (payload) {
+    let sql = "";
+    if (payload.isFirstLevel == 0) {
+      sql = `INSERT INTO ${DatabaseName}.commentInfo VALUES (${payload.id},${payload.commentUser.id},NULL,NULL,${payload.isFirstLevel},'${payload.content}','${payload.createDate}')`;
+      console.log(sql, "sql");
+    } else {
+      sql = `INSERT INTO ${DatabaseName}.commentInfo VALUES (${payload.id},${payload.commentUser.id},${payload.targetUser.userId},${payload.parentId},${payload.isFirstLevel},'${payload.content}','${payload.createDate}')`;
+      console.log(sql, "sql2");
+    }
+    return new Promise((resolve, reject) => {
+      db.query(sql, payload, function (data, err) {
+        if (data) {
+          console.log(data, "添加评论");
+          resolve(data);
+        } else {
+          resolve([]);
+        }
       });
     });
   },

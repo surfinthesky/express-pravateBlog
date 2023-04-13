@@ -378,6 +378,24 @@ Routers.post("/replyMessgaelist", (request, response) => {
     }
   });
 });
+//根据id获取到完整的用户信息
+Routers.post("/getuserInfo", (request, response) => {
+  let params = request.body || request.params;
+  fn.getuserInfo(params).then((result) => {
+    if (result) {
+      response.send({
+        status: 1,
+        message: "success",
+        result,
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "error",
+      });
+    }
+  });
+});
 //获取当前用户ip信息
 Routers.post("/getlocationIp", (request, response) => {
   getRequest({
@@ -409,5 +427,22 @@ Routers.get("/getWeather", (request, response) => {
       // console.log(err, "location1");
     });
 });
-
+//添加用户
+Routers.post("/insertMessage", (request, response) => {
+  let params = request.body || request.params;
+  fn.insertMessage(params).then((result) => {
+    if (result) {
+      response.send({
+        status: 1,
+        message: "success",
+        result,
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "error",
+      });
+    }
+  });
+});
 module.exports = Routers;
