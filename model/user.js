@@ -8,6 +8,9 @@ let DatabaseName = "myblog";
 // 随机数
 let { randomNum } = require("../utils/randomNum");
 let { crypto_decrypt } = require("../utils/crypto");
+function infoTostrig(payload) {
+  return `SELECT  id,username,avatarurl   FROM ${DatabaseName}.login  WHERE  ID   in  ${payload}`;
+}
 const fn = {
   //注册用户  无返回值
   addUser: async function (payload) {
@@ -20,7 +23,7 @@ const fn = {
           });
         } else {
           let hashPass = bcrypt.hashSync(payload.password, salt);
-          let sql2 = `INSERT INTO  ${DatabaseName}.login VALUES(NULL,'${payload.username}','${hashPass}')`;
+          let sql2 = `INSERT INTO  ${DatabaseName}.login VALUES(NULL,'${payload.username}','${hashPass}','${payload.avatarurl}')`;
           db.query(sql2, payload, function (data, err) {
             if (data.insertId) {
               resolve({
@@ -324,29 +327,82 @@ const fn = {
     const pageList = await new Promise((resolve, reject) => {
       db.query(parentsql, payload, function (data, err) {
         if (data) {
-          resolve(data);
-          // let infoObj = {};
-          // let userinfodata = [];
-          // data.map((item) => {
-          //   let findUser = `SELECT * FROM ${DatabaseName}.login WHERE ID = ${item.userId}`;
-          //   db.query(findUser, payload, function (data, err) {
-          //     infoObj.id = data[0].id;
-          //     infoObj.username = data[0].username;
-          //     infoObj.avatarurl = data[0].avatarurl;
-          //     item.userinfo = infoObj;
-          //     userinfodata.push(item);
-          //     resolve(userinfodata);
-          //   });
-          // });
+          let userinfodata = []; //存储用户id待sql查询
+          let userinfodataFinal = []; //最终格式化的数据，放入commentUser{}
+          userinfodataFinal = data;
+          data.map((item) => {
+            userinfodata.push(item.userId);
+          });
+          // console.log(userinfodata, "父节点");
+          let toStringsql = infoTostrig("(" + userinfodata.toString() + ")");
+          // console.log(toStringsql, "toStringsql");
+          db.query(toStringsql, payload, function (dataUserinfo, err) {
+            // console.log(dataUserinfo, "datastring");
+            // console.log(data, "errtostring");
+            userinfodataFinal.map((item) => {
+              dataUserinfo.map((itemu) => {
+                if (item.userId == itemu.id) {
+                  item.commentUser = itemu;
+                  // console.log(itemu,'itemu查询到的用户');
+                }
+              });
+            });
+            resolve(userinfodataFinal);
+            // console.log(userinfodataFinal,'final数据');
+          });
+          // resolve(data);
         } else {
           resolve([]);
         }
       });
     });
-    const childpageList = new Promise((resolve, reject) => {
-      db.query(childsql, payload, function (data, err) {
+    let arr = [];
+    // let userinfosql = `SELECT  id,username,avatarurl   FROM ${DatabaseName}.login  WHERE  ID   in  ('10086','47','56','','')`;
+    const childpageList = await new Promise((resolve, reject) => {
+      db.query(childsql, payload, function async(data, err) {
         if (data) {
-          resolve(data);
+          let userinfodata = []; //存储用户id待sql查询
+          let userinfotarget = []; //存储回复用户id待sql查询
+          let userinfodataFinal = []; //最终格式化的数据，放入commentUser{}
+          userinfodataFinal = data;
+          data.map((item) => {
+            userinfodata.push(item.userId);
+            userinfotarget.push(item.toCommentId);
+          });
+          // console.log(userinfodata, "父节点");
+          let toStringsql = infoTostrig("(" + userinfodata.toString() + ")");
+          let toStringsql2 = infoTostrig("(" + userinfotarget.toString() + ")");
+          // console.log(toStringsql, "toStringsql");
+          db.query(toStringsql, payload, function async(dataUserinfo, err) {
+            // console.log(dataUserinfo, "datastring");
+            // console.log(data, "errtostring");
+            userinfodataFinal.map((item) => {
+              dataUserinfo.map((itemu) => {
+                if (item.userId == itemu.id) {
+                  item.commentUser = itemu;
+                  // console.log(itemu,'itemu查询到的用户');
+                }
+              });
+            });
+            // console.log(userinfodataFinal, "final数据");
+            db.query(toStringsql2, payload, function (datatarget, err) {
+              if (datatarget) {
+                userinfodataFinal.map((item) => {
+                  datatarget.map((itemu) => {
+                    if (item.toCommentId == itemu.id) {
+                      item.targetUser = itemu;
+                      // console.log(itemu,'itemu查询到的用户');
+                    }
+                  });
+                });
+                // console.log(datatarget, "datatarget");
+                // console.log(userinfodataFinal, "final数据2");
+                resolve(userinfodataFinal);
+              }
+            });
+          });
+          // console.log(data, "子节点");
+          // resolve(data);
         } else {
           resolve([]);
         }
@@ -362,7 +418,10 @@ const fn = {
 
   // 根据id获取用户信息
   getuserInfo: async function (payload) {
+    // 集合式查询写法
+    // SELECT  id,username,avatarurl   FROM login  WHERE  ID   in  ('10086','47','56','','')
     let sql = `SELECT  id,username,avatarurl   FROM ${DatabaseName}.login  WHERE  ID   = ${payload.id}`;
+
     return new Promise((resolve, reject) => {
       db.query(sql, payload, function (data, err) {
         if (data) {
