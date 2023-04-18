@@ -1,10 +1,11 @@
 {
-  "name": "mi",
+  "name": "surfinthesky",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
   },
   "author": "",
   "license": "ISC",
@@ -19,6 +20,7 @@
     "express-jwt": "^5.3.1",
     "formidable": "^1.2.1",
     "fs": "^0.0.1-security",
+    "i": "^0.3.7",
     "imageinfo": "^1.0.4",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
@@ -28,6 +30,14 @@
     "qiniu": "^7.2.2",
     "silly-datetime": "^0.1.2",
     "socket.io": "^2.3.0",
+    "uglifyjs-webpack-plugin": "^2.2.0",
     "util": "^0.12.5"
+  },
+  "devDependencies": {
+    "babel-loader": "^9.1.2",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "webpack": "^5.79.0",
+    "webpack-cli": "^5.0.1"
   }
 }

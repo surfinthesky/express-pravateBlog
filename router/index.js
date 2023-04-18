@@ -81,10 +81,10 @@ Routers.post("/register", (request, response) => {
   let params = request.body || request.params;
   //    数据库操作
   fn.addUser(params).then((result) => {
-    console.log(result);
     if (result.message == "注册成功") {
       response.send({
         status: 0,
+        userId:result.userId,
         message: result.message,
       });
     } else {
@@ -436,6 +436,42 @@ Routers.post("/insertMessage", (request, response) => {
         status: 1,
         message: "success",
         result,
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "error",
+      });
+    }
+  });
+});
+//获取所有留言
+Routers.post("/getAllmessage", (request, response) => {
+  let params = request.body || request.params;
+  fn.getAllmessage(params).then((result) => {
+    if (result) {
+      response.send({
+        status: 1,
+        message: "success",
+        count:result[0],
+        result:result[1],
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "error",
+      });
+    }
+  });
+});
+//根据id删除留言
+Routers.post("/deleteMessage", (request, response) => {
+  let params = request.body || request.params;
+  fn.deleteMessage(params).then((result) => {
+    if (result) {
+      response.send({
+        status: 1,
+        message: "success",
       });
     } else {
       response.send({

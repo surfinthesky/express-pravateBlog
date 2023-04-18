@@ -12,7 +12,7 @@ function infoTostrig(payload) {
   return `SELECT  id,username,avatarurl   FROM ${DatabaseName}.login  WHERE  ID   in  ${payload}`;
 }
 const fn = {
-  //注册用户  无返回值
+  // 注册用户  无返回值
   addUser: async function (payload) {
     let sql = `select  passWord from ${DatabaseName}.login  WHERE username =  '${payload.username}'`;
     return new Promise((resolve, reject) => {
@@ -27,6 +27,7 @@ const fn = {
           db.query(sql2, payload, function (data, err) {
             if (data.insertId) {
               resolve({
+                userId: data.insertId,
                 message: "注册成功",
               });
             } else {
@@ -449,6 +450,48 @@ const fn = {
           resolve(data);
         } else {
           resolve([]);
+        }
+      });
+    });
+  },
+  //获取所有留言1 - 10
+  getAllmessage: async function (payload) {
+    let sqlcount = "SELECT count(id)  FROM myblog.commentInfo";
+    let sqlList = `select  * from ${DatabaseName}.commentInfo  order by createDate DESC limit ${
+      (payload.pagenum - 1) * 10
+    },${payload.pagesize}`;
+    let count = new Promise((resolve, reject) => {
+      db.query(sqlcount, payload, function (data, err) {
+        if (data) {
+          resolve(Number(data[0]["count(id)"]));
+        } else {
+          resolve([]);
+        }
+      });
+    });
+    let pageList = new Promise((resolve, reject) => {
+      db.query(sqlList, payload, function (data, err) {
+        if (data) {
+          resolve(data);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+    return Promise.all([count, pageList]).then((values) => {
+      return new Promise((resolve) => {
+        resolve(values);
+      });
+    });
+  },
+  deleteMessage: async function (payload) {
+    let sql = `DELETE FROM ${DatabaseName}.commentInfo WHERE ID =${payload.delectId}`;
+    return new Promise((resolve, reject) => {
+      db.query(sql, payload, function (data, err) {
+        if (data.affectedRows == 1) {
+          resolve({message:"删除成功"});
+        } else {
+          resolve('');
         }
       });
     });
