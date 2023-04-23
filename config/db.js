@@ -4,10 +4,10 @@ const mysql = require("mysql");
 
 // 创建 mysql 连接池并配置参数
 const pool = mysql.createPool({
-    host: "43.139.180.164",    // 主机地址
-    port: 3306,                 // 端口
+    host: "140.246.66.44",    // 主机地址
+    port: 30030,                 // 端口
     user: "root",               // 数据库访问账号
-    password: "Dwl_mysql!!!",         // 数据库访问密码
+    password: "Dwl_mysql",         // 数据库访问密码
     database: "mysql",           // 要访问的数据库
     charset: "UTF8_GENERAL_CI", // 字符编码 ( 必须大写 )
     typeCast: true,             // 是否把结果值转换为原生的 javascript 类型

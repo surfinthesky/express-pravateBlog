@@ -24,10 +24,10 @@ Routers.use(tokens);
 
 // 如果token过期或者 错误的处理
 Routers.use(function (err, req, res, next) {
-  console.log(err);
+  // console.log(err);
   // console.log(req.url, "req");
   // console.log(res);
-  console.log("------------");
+  // console.log("------------");
   if (err.name === "UnauthorizedError") {
     //  这个需要根据自己的业务逻辑来处理（ 具体的err值 请看下面）
     res.status(401).send("token失效");
@@ -84,7 +84,7 @@ Routers.post("/register", (request, response) => {
     if (result.message == "注册成功") {
       response.send({
         status: 0,
-        userId:result.userId,
+        userId: result.userId,
         message: result.message,
       });
     } else {
@@ -363,12 +363,20 @@ Routers.post("/articledetail", (request, response) => {
 Routers.post("/replyMessgaelist", (request, response) => {
   let params = request.body || request.params;
   fn.replyMessgae(params).then((result) => {
-    if (result) {
+    // console.log(result, "result--");
+    if (result.length > 0) {
       response.send({
         status: 1,
         message: "success",
         count: result[0].count,
         result: [...result[1], ...result[2]],
+      });
+    } else if (result.length == 0) {
+      response.send({
+        status: 1,
+        message: "success",
+        count: 0,
+        result: [],
       });
     } else {
       response.send({
@@ -413,7 +421,7 @@ Routers.post("/getlocationIp", (request, response) => {
 });
 //根据用户ip信息 获取天气
 Routers.get("/getWeather", (request, response) => {
-  console.log(request.query.locationid,'request');
+  console.log(request.query.locationid, "request");
   getRequest({
     url: `https://api.seniverse.com/v3/weather/daily.json?key=S_mrtmdQWcp2TDX3H&location=${request.query.locationid}&language=zh-Hans&unit=c&start=0&days=5`,
     method: "get",
@@ -453,8 +461,8 @@ Routers.post("/getAllmessage", (request, response) => {
       response.send({
         status: 1,
         message: "success",
-        count:result[0],
-        result:result[1],
+        count: result[0],
+        result: result[1],
       });
     } else {
       response.send({

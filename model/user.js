@@ -4,7 +4,7 @@ const db = require("../config/db");
 const bcrypt = require("bcryptjs");
 const salt = bcrypt.genSaltSync(10);
 //表名变量
-let DatabaseName = "myblog";
+let DatabaseName = "blog";
 // 随机数
 let { randomNum } = require("../utils/randomNum");
 let { crypto_decrypt } = require("../utils/crypto");
@@ -120,7 +120,7 @@ const fn = {
         payload.pagesize
       }`;
     } else {
-      sqllist = "SELECT count(id)  FROM myblog.article";
+      sqllist = "SELECT count(id)  FROM blog.article";
       sql = `select  * from ${DatabaseName}.article  order by articleCreatTime DESC limit ${
         (payload.pagenum - 1) * 10
       },${payload.pagesize}`;
@@ -193,7 +193,7 @@ const fn = {
   //   获取timeline列表
   getTimelinelist: async function (payload) {
     console.log(payload.pagenum, "payload");
-    let sqllist = "SELECT count(id)  FROM myblog.timeline";
+    let sqllist = "SELECT count(id)  FROM blog.timeline";
     const count = new Promise((resolve, reject) => {
       db.query(sqllist, payload, function (data, err) {
         resolve({
@@ -313,21 +313,46 @@ const fn = {
 
   //留言接口  WHERE ISNULL(toCommentId)
   replyMessgae: async function (payload) {
-    let countsql = `SELECT COUNT(id) FROM ${DatabaseName}.commentInfo WHERE  ISNULL(toCommentId) `;
-    let parentsql = `SELECT * FROM ${DatabaseName}.commentInfo    WHERE ISNULL(toCommentId)  ORDER BY createDate DESC LIMIT ${
-      (payload.pagenum - 1) * 10
-    },${payload.pagesize}`;
-    let childsql = `SELECT * FROM ${DatabaseName}.commentInfo WHERE toCommentId is not null ORDER BY createDate DESC`;
+    let countsql = "";
+    let parentsql = "";
+    let childsql = "";
+    //判断是文章留言还是吐槽留言入口
+    if (payload.type == "article") {
+      countsql = `SELECT COUNT(id) FROM ${DatabaseName}.articlemessage WHERE  ISNULL(toCommentId) AND articleid = ${payload.articleid}`;
+      parentsql = `SELECT * FROM ${DatabaseName}.articlemessage    WHERE ISNULL(toCommentId) AND articleid = ${
+        payload.articleid
+      }  ORDER BY createDate DESC LIMIT ${(payload.pagenum - 1) * 10},${
+        payload.pagesize
+      }`;
+      childsql = `SELECT * FROM ${DatabaseName}.articlemessage WHERE toCommentId is not null AND articleid = ${payload.articleid} ORDER BY createDate DESC`;
+    } else {
+      countsql = `SELECT COUNT(id) FROM ${DatabaseName}.commentInfo WHERE  ISNULL(toCommentId) `;
+      parentsql = `SELECT * FROM ${DatabaseName}.commentInfo    WHERE ISNULL(toCommentId)  ORDER BY createDate DESC LIMIT ${
+        (payload.pagenum - 1) * 10
+      },${payload.pagesize}`;
+      childsql = `SELECT * FROM ${DatabaseName}.commentInfo WHERE toCommentId is not null ORDER BY createDate DESC`;
+    }
+    let countNum = "";
+    console.log(countsql, "countsql");
     const count = await new Promise((resolve, reject) => {
       db.query(countsql, payload, function (data, err) {
-        resolve({
-          count: Number(data[0]["COUNT(id)"]),
-        });
+        console.log(data, "----data");
+        if (data[0]["COUNT(id)"] == 0) {
+          countNum = Number(data[0]["COUNT(id)"]);
+          console.log(Number(data[0]["COUNT(id)"]), "countNum");
+          resolve([]);
+        } else {
+          resolve({
+            count: Number(data[0]["COUNT(id)"]),
+          });
+        }
       });
     });
+
     const pageList = await new Promise((resolve, reject) => {
       db.query(parentsql, payload, function (data, err) {
-        if (data) {
+        if (data.length !== 0) {
+          console.log(data,'pagelist------------');
           let userinfodata = []; //存储用户id待sql查询
           let userinfodataFinal = []; //最终格式化的数据，放入commentUser{}
           userinfodataFinal = data;
@@ -361,7 +386,7 @@ const fn = {
     // let userinfosql = `SELECT  id,username,avatarurl   FROM ${DatabaseName}.login  WHERE  ID   in  ('10086','47','56','','')`;
     const childpageList = await new Promise((resolve, reject) => {
       db.query(childsql, payload, function async(data, err) {
-        if (data) {
+        if (data.length !== 0) {
           let userinfodata = []; //存储用户id待sql查询
           let userinfotarget = []; //存储回复用户id待sql查询
           let userinfodataFinal = []; //最终格式化的数据，放入commentUser{}
@@ -437,10 +462,18 @@ const fn = {
   insertMessage: async function (payload) {
     let sql = "";
     if (payload.isFirstLevel == 0) {
-      sql = `INSERT INTO ${DatabaseName}.commentInfo VALUES (${payload.id},${payload.commentUser.id},NULL,NULL,${payload.isFirstLevel},'${payload.content}','${payload.createDate}')`;
+      if (payload.type == "article") {
+        sql = `INSERT INTO ${DatabaseName}.articlemessage VALUES (NULL,${payload.articleid},${payload.commentUser.id},NULL,NULL,${payload.isFirstLevel},'${payload.content}','${payload.createDate}')`;
+      } else {
+        sql = `INSERT INTO ${DatabaseName}.commentInfo VALUES (${payload.id},${payload.commentUser.id},NULL,NULL,${payload.isFirstLevel},'${payload.content}','${payload.createDate}')`;
+      }
       console.log(sql, "sql");
     } else {
-      sql = `INSERT INTO ${DatabaseName}.commentInfo VALUES (${payload.id},${payload.commentUser.id},${payload.targetUser.userId},${payload.parentId},${payload.isFirstLevel},'${payload.content}','${payload.createDate}')`;
+      if (payload.type == "article") {
+        sql = `INSERT INTO ${DatabaseName}.articlemessage VALUES (NULL,${payload.articleid},${payload.commentUser.id},${payload.targetUser.userId},${payload.parentId},${payload.isFirstLevel},'${payload.content}','${payload.createDate}')`;
+      } else {
+        sql = `INSERT INTO ${DatabaseName}.commentInfo VALUES (${payload.id},${payload.commentUser.id},${payload.targetUser.userId},${payload.parentId},${payload.isFirstLevel},'${payload.content}','${payload.createDate}')`;
+      }
       console.log(sql, "sql2");
     }
     return new Promise((resolve, reject) => {
@@ -454,9 +487,9 @@ const fn = {
       });
     });
   },
-  //获取所有留言1 - 10
+  //获取所有留言管理侧 1 - 10
   getAllmessage: async function (payload) {
-    let sqlcount = "SELECT count(id)  FROM myblog.commentInfo";
+    let sqlcount = "SELECT count(id)  FROM blog.commentInfo";
     let sqlList = `select  * from ${DatabaseName}.commentInfo  order by createDate DESC limit ${
       (payload.pagenum - 1) * 10
     },${payload.pagesize}`;
@@ -489,9 +522,9 @@ const fn = {
     return new Promise((resolve, reject) => {
       db.query(sql, payload, function (data, err) {
         if (data.affectedRows == 1) {
-          resolve({message:"删除成功"});
+          resolve({ message: "删除成功" });
         } else {
-          resolve('');
+          resolve("");
         }
       });
     });
