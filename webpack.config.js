@@ -1,7 +1,7 @@
 "use strict";
 
 const webpack = require("webpack");
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 // let externals = _externals();
 
 // module.exports = {
@@ -57,10 +57,14 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 // }
 
 module.exports = {
-    entry: ['./app.js'],
-    target: "node",
-    output: {
-        path: __dirname + '/build',
-        filename: "[name].js"
-    }
-}
+  entry: ["./app.js"],
+  target: "node",
+  output: {
+    path: __dirname + "/build",
+    filename: "[name].js",
+  },
+  mode: 'development', // 设置mode
+  optimization: {
+    minimize: false,
+  },
+};

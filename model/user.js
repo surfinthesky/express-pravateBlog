@@ -83,7 +83,7 @@ const fn = {
       payload.articleDiff
     }','${payload.articleDate}','${payload.articleCreatTime}','${
       payload.articleHtmlText
-    }','${payload.articleNum}'
+    }','${payload.articleMdText}','${payload.articleNum}'
     )`;
     return new Promise((resolve, reject) => {
       db.query(sql, payload, function (data, err) {
@@ -97,7 +97,7 @@ const fn = {
   },
   // sys文章更新
   updateArticle: async function (payload) {
-    let sql = `UPDATE  ${DatabaseName}.article SET articleTitle ='${payload.articleTitle}',articleDscibe ='${payload.articleDscibe}',articlePic ='${payload.articlePic}',articleDiff ='${payload.articleDiff}',articleDate ='${payload.articleDate}', articleCreatTime ='${payload.articleCreatTime}',articleHtmlText ='${payload.articleHtmlText}',articleNum ='${payload.articleNum}'WHERE ID =${payload.id}`;
+    let sql = `UPDATE  ${DatabaseName}.article SET articleTitle ='${payload.articleTitle}',articleDscibe ='${payload.articleDscibe}',articlePic ='${payload.articlePic}',articleDiff ='${payload.articleDiff}',articleDate ='${payload.articleDate}', articleCreatTime ='${payload.articleCreatTime}',articleHtmlText ='${payload.articleHtmlText}',articleMdText ='${payload.articleMdText}',articleNum ='${payload.articleNum}'WHERE ID =${payload.id}`;
     return new Promise((resolve, reject) => {
       db.query(sql, payload, function (data, err) {
         if (data) {
@@ -167,6 +167,20 @@ const fn = {
               resolve([]);
             }
           });
+        }
+      });
+    });
+  },
+  //文章阅读量
+  readNumIncrement: async function (payload) {
+    let sql = `UPDATE ${DatabaseName}.article SET articleNum  =articleNum+1  WHERE id = ${payload}`;
+    return new Promise((resolve, reject) => {
+      db.query(sql, payload, function (data, err) {
+        console.log(data, "阅读");
+        if (data.affectedRows == 1) {
+          resolve(data);
+        } else {
+          resolve([]);
         }
       });
     });
@@ -352,7 +366,7 @@ const fn = {
     const pageList = await new Promise((resolve, reject) => {
       db.query(parentsql, payload, function (data, err) {
         if (data.length !== 0) {
-          console.log(data,'pagelist------------');
+          console.log(data, "pagelist------------");
           let userinfodata = []; //存储用户id待sql查询
           let userinfodataFinal = []; //最终格式化的数据，放入commentUser{}
           userinfodataFinal = data;
@@ -525,6 +539,104 @@ const fn = {
           resolve({ message: "删除成功" });
         } else {
           resolve("");
+        }
+      });
+    });
+  },
+
+  // sys创建日常案例
+  addDailyCase: async function (payload) {
+    // console.log(payload, "payload");
+    let sql = `INSERT INTO ${DatabaseName}.dailycase VALUES (null,'${payload.caseTitle}','${payload.caseDescribe}','${payload.caseDate}','${payload.caseBgurl}','${payload.caseContent}'
+      )`;
+    return new Promise((resolve, reject) => {
+      db.query(sql, payload, function (data, err) {
+        if (data) {
+          resolve(data);
+        } else {
+          resolve([]);
+        }
+      });
+    }).catch(() => {});
+  },
+  //获取日常案列
+  getaddDailyCaselist: async function (payload) {
+    let sqllist = "";
+    let sql = "";
+    sqllist = `SELECT count(id) FROM ${DatabaseName}.dailycase`;
+    sql = `SELECT *  FROM ${DatabaseName}.dailycase    order by caseDate DESC limit ${
+      (payload.pagenum - 1) * 10
+    },${payload.pagesize}`;
+    // 案列总数
+    const count = new Promise((resolve, reject) => {
+      db.query(sqllist, payload, function (data, err) {
+        // console.log(data, "总数量----");
+        resolve({
+          count: data[0]["count(id)"],
+        });
+      });
+    });
+    // 根据caseDate降序排列 DESC降序 ASC升序
+    const pageList = new Promise((resolve, reject) => {
+      db.query(sql, payload, function (data, err) {
+        // console.log(data, "数据");
+        resolve(data);
+      });
+    });
+    return Promise.all([count, pageList]).then((values) => {
+      // console.log([...values], "values");
+      return new Promise((resolve) => {
+        resolve(values);
+      });
+    });
+  },
+  //获取文章留言总数及数据
+  getartMeslist: async function (payload) {
+    let sqllist = "";
+    let sql = "";
+    sqllist = `SELECT count(id) FROM ${DatabaseName}.articlemessage`;
+    sql = `SELECT *  FROM ${DatabaseName}.articlemessage    order by createDate DESC limit ${
+      (payload.pagenum - 1) * 10
+    },${payload.pagesize}`;
+    // 获取文章留言总数
+    const count = new Promise((resolve, reject) => {
+      db.query(sqllist, payload, function (data, err) {
+        // console.log(data, "总数量----");
+        resolve({
+          count: data[0]["count(id)"],
+        });
+      });
+    });
+    // 根据articlemessage降序排列 DESC降序 ASC升序
+    const pageList = new Promise((resolve, reject) => {
+      db.query(sql, payload, function (data, err) {
+        // console.log(data, "数据");
+        resolve(data);
+      });
+    });
+    return Promise.all([count, pageList]).then((values) => {
+      // console.log([...values], "values");
+      return new Promise((resolve) => {
+        resolve(values);
+      });
+    });
+  },
+  // 根据id删除文章留言
+  deleteArtMes: async function (payload) {
+    let deletesql = `DELETE FROM ${DatabaseName}.articlemessage WHERE ID =${payload.delectId}`;
+    let isExistence = `SELECT * FROM ${DatabaseName}.articlemessage WHERE ID = ${payload.delectId}`;
+    return new Promise((resolve, reject) => {
+      db.query(isExistence, payload, function (data, err) {
+        if (data.length == 0) {
+          resolve({ msg: "未查询到该id" });
+        } else {
+          db.query(deletesql, payload, function (data, err) {
+            if (data) {
+              resolve(data);
+            } else {
+              resolve([]);
+            }
+          });
         }
       });
     });

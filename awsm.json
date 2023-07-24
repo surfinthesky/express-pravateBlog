@@ -1,0 +1,12 @@
+{
+  "exclude": ["aws-sdk", "mysql"],
+  "includePaths": [
+    "node_modules/mysql",
+    "node_modules/bignumber.js",
+    "node_modules/readable-stream",
+    "node_modules/isarray",
+    "node_modules/core-util-is",
+    "node_modules/inherits",
+    "node_modules/string_decoder"
+  ]
+}

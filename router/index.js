@@ -225,6 +225,27 @@ Routers.post("/articlesort", (request, response) => {
   });
 });
 
+// 文章阅读量增加
+Routers.get("/readnum", (request, response) => {
+  let params = request.query;
+  //  数据库操作
+  fn.readNumIncrement(params.id).then((result) => {
+    if (result) {
+      console.log(result, "result");
+      response.send({
+        status: 1,
+        message: "success",
+        result,
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "error",
+      });
+    }
+  });
+});
+
 // 创建timeline
 Routers.post("/addtimeline", (request, response) => {
   let params = request.body || request.params;
@@ -386,6 +407,33 @@ Routers.post("/replyMessgaelist", (request, response) => {
     }
   });
 });
+//获取文章所有留言
+Routers.post("/getartMeslist", (request, response) => {
+  let params = request.body || request.params;
+  fn.getartMeslist(params).then((result) => {
+    // console.log(result, "result--getartMeslist");
+    if (result.length > 0) {
+      response.send({
+        status: 1,
+        message: "success",
+        count: Number(result[0].count),
+        result: [...result[1]],
+      });
+    } else if (result.length == 0) {
+      response.send({
+        status: 1,
+        message: "success",
+        count: 0,
+        result: [],
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "error",
+      });
+    }
+  });
+});
 //根据id获取到完整的用户信息
 Routers.post("/getuserInfo", (request, response) => {
   let params = request.body || request.params;
@@ -411,6 +459,7 @@ Routers.post("/getlocationIp", (request, response) => {
     method: "post",
   })
     .then((res) => {
+      // console.log(res, "地区信息");
       if (res.data) {
         response.send(res.data);
       }
@@ -421,7 +470,7 @@ Routers.post("/getlocationIp", (request, response) => {
 });
 //根据用户ip信息 获取天气
 Routers.get("/getWeather", (request, response) => {
-  console.log(request.query.locationid, "request");
+  // console.log(request.query.locationid, "request");
   getRequest({
     url: `https://api.seniverse.com/v3/weather/daily.json?key=S_mrtmdQWcp2TDX3H&location=${request.query.locationid}&language=zh-Hans&unit=c&start=0&days=5`,
     method: "get",
@@ -488,5 +537,38 @@ Routers.post("/deleteMessage", (request, response) => {
       });
     }
   });
+});
+// 根据id删除文章留言
+Routers.post("/deleteArtMes", (request, response) => {
+  let params = request.body || request.params;
+  fn.deleteArtMes(params).then((result) => {
+    if (result) {
+      response.send({
+        status: 1,
+        message: "success",
+      });
+    } else {
+      response.send({
+        status: 0,
+        message: "error",
+      });
+    }
+  });
+});
+
+//获取meting数据
+Routers.get("/getmeting", (request, response) => {
+  console.log("?????????");
+  getRequest({
+    url: "https://api.i-meto.com/meting/api?server=netease&type=playlist&id=8152976493&auth=undefined&r=0.7461842665055767",
+    method: "get",
+  })
+    .then((res) => {
+      console.log(res, "getmeting");
+      response.send(res.data);
+    })
+    .catch((err) => {
+      console.log(err, "location1");
+    });
 });
 module.exports = Routers;
